@@ -16,6 +16,8 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 import java.util.Arrays;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -24,7 +26,7 @@ import java.util.Arrays;
 @SpringUI
 @Theme("valo")
 public class MiUI extends UI{
-
+@Autowired RepositorioMensajitos repoMensa;
     @Override
     protected void init(VaadinRequest request) {
    VerticalLayout layout=new VerticalLayout();
@@ -40,8 +42,16 @@ public class MiUI extends UI{
    }
    );
 
+   List<Mensajitos> mensajitos = (List<Mensajitos>)repoMensa.findAll();
    
-   
+Grid<Mensajitos> grid = new Grid<>();
+grid.setItems(mensajitos);
+grid.addColumn(Mensajitos::getId).setCaption("ID");
+grid.addColumn(Mensajitos::getTitulo).setCaption("Titulo del Mensaje");
+grid.addColumn(Mensajitos::getCuerpo).setCaption("Cuerpo del Mensaje");
+
+layout.addComponent(grid);
+         
         setContent(layout);
     }
     
