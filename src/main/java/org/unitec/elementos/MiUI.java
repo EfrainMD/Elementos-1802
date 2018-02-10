@@ -16,6 +16,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.data.util.*;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
@@ -37,9 +38,13 @@ public TextField t2;
 public Integer miId;
     @Autowired
     RepositorioMensajitos repoMensa;
+    
 
     @Override
     protected void init(VaadinRequest request) {
+        t1=new TextField();
+        t2=new TextField();
+        t2.setWidth("340px");
         VerticalLayout layout = new VerticalLayout();
         Label e1 = new Label("Bienvenido");
         layout.addComponent(e1);
@@ -48,9 +53,14 @@ public Integer miId;
         e1.addStyleName(ValoTheme.LABEL_H1);
         b1.addStyleName(ValoTheme.BUTTON_PRIMARY);
         b1.addClickListener(malo -> {
-            Notification.
-                    show("Error", "Este es un error que acabas de cometer", Notification.Type.ERROR_MESSAGE);
-        }
+            
+            t1.setValue("");
+            t2.setValue("");
+            MiVentanaGuardar sub = new MiVentanaGuardar();
+
+            UI.getCurrent().addWindow(sub);
+            
+           }
         );
 
         List<Mensajitos> mensajitos = (List<Mensajitos>) repoMensa.findAll();
@@ -59,12 +69,16 @@ public Integer miId;
         grid.setItems(mensajitos);
         grid.addColumn(Mensajitos::getId).setCaption("ID");
         grid.addColumn(Mensajitos::getTitulo).setCaption("Titulo del mensaje");
-        grid.addColumn(Mensajitos::getCuerpo).setCaption("Cuerpo del mensaje");
+        grid.addColumn(Mensajitos::getCuerpo).setCaption("Puerco del mensaje");
 
+        //2. agregar al grid el modo de seleccion unico
         grid.setSelectionMode(SelectionMode.SINGLE);
 
         grid.addItemClickListener(evento -> {
-            Notification.show("Valor: " + evento.getItem().getTitulo());
+          //  Notification.show("Valor: " + evento.getItem().getTitulo());
+            miId=evento.getItem().getId();
+            t1.setValue(evento.getItem().getTitulo());
+            t2.setValue(evento.getItem().getCuerpo());
             MiVentana sub = new MiVentana();
 
             UI.getCurrent().addWindow(sub);
@@ -74,21 +88,55 @@ public Integer miId;
 
         setContent(layout);
     }
-
-}
-
-class MiVentana extends Window {
+   public  class MiVentana extends Window {
 
     public MiVentana() {
-        super("Actualizar o Borrar");
+        super("Actualizar o borrar");
+        setWidth("400px");
         center();
         VerticalLayout vl2 = new VerticalLayout();
 
-        TextField t1 = new TextField();
-        TextField t2 = new TextField();
 
         Button boton = new Button("Actualizar");
+        boton.addStyleName(ValoTheme.BUTTON_PRIMARY);
+        Button botonBorrar=new Button("Borrar");
+        botonBorrar.addStyleName(ValoTheme.BUTTON_DANGER);
+        botonBorrar.addClickListener(evento->{
+            repoMensa.delete(miId);
+        });
+        
         boton.addClickListener(evento -> {
+        
+            repoMensa.save(new Mensajitos(miId,t1.getValue(),t2.getValue()));
+            close();
+        });
+        vl2.addComponent(t1);
+        vl2.addComponent(t2);
+        HorizontalLayout hl=new HorizontalLayout();
+        
+        hl.addComponent(boton);
+        hl.addComponent(botonBorrar);
+        vl2.addComponent(hl);
+
+        setContent(vl2);
+    }
+}
+   
+   
+    public  class MiVentanaGuardar extends Window {
+
+    public MiVentanaGuardar() {
+        super("Guardar");
+        setWidth("400px");
+        center();
+        VerticalLayout vl2 = new VerticalLayout();
+
+
+        Button boton = new Button("Guardar");
+        boton.addClickListener(evento -> {
+            
+            
+            repoMensa.save(new Mensajitos(t1.getValue(),t2.getValue()));
             close();
         });
         vl2.addComponent(t1);
@@ -97,4 +145,6 @@ class MiVentana extends Window {
 
         setContent(vl2);
     }
+}
+
 }
